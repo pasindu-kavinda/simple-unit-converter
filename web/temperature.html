@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Temperature Converter with Alpine.js</title>
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .converter {
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        input,
+        select,
+        button {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="converter" x-data="temperatureConverter">
+        <h2>Temperature Converter</h2>
+
+        <label for="inputValue">Value:</label>
+        <input id="inputValue" type="number" x-model="inputValue" placeholder="Enter value" @input="validateInput">
+
+        <label for="fromUnit">From:</label>
+        <select id="fromUnit" x-model="fromUnit">
+            <option value="celsius">Celsius</option>
+            <option value="fahrenheit">Fahrenheit</option>
+            <option value="kelvin">Kelvin</option>
+        </select>
+
+        <label for="toUnit">To:</label>
+        <select id="toUnit" x-model="toUnit">
+            <option value="celsius">Celsius</option>
+            <option value="fahrenheit">Fahrenheit</option>
+            <option value="kelvin">Kelvin</option>
+        </select>
+
+        <button @click="convert" :disabled="!toUnit || !inputValue">Convert</button>
+
+        <h3>Result:</h3>
+        <p x-text="result || 'Enter a value and select units to convert.'"></p>
+    </div>
+
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('temperatureConverter', () => ({
+                inputValue: null,
+                fromUnit: 'celsius',
+                toUnit: 'fahrenheit',
+                result: null,
+
+                validateInput() {
+                    if (!this.inputValue) {
+                        this.result = null;
+                    }
+                },
+
+                convert() {
+                    const value = parseFloat(this.inputValue);
+                    if (isNaN(value)) {
+                        this.result = 'Invalid input';
+                        return;
+                    }
+
+                    let convertedValue;
+
+                    if (this.fromUnit === this.toUnit) {
+                        convertedValue = value;
+                    } else {
+                        // Convert to Celsius first
+                        let celsiusValue;
+                        switch (this.fromUnit) {
+                            case 'celsius':
+                                celsiusValue = value;
+                                break;
+                            case 'fahrenheit':
+                                celsiusValue = (value - 32) * (5 / 9);
+                                break;
+                            case 'kelvin':
+                                celsiusValue = value - 273.15;
+                                break;
+                        }
+
+                        // Convert from Celsius to the target unit
+                        switch (this.toUnit) {
+                            case 'celsius':
+                                convertedValue = celsiusValue;
+                                break;
+                            case 'fahrenheit':
+                                convertedValue = (celsiusValue * (9 / 5)) + 32;
+                                break;
+                            case 'kelvin':
+                                convertedValue = celsiusValue + 273.15;
+                                break;
+                        }
+                    }
+
+                    this.result =
+                        `${value} ${this.fromUnit} = ${convertedValue.toFixed(4)} ${this.toUnit}`;
+                },
+            }));
+        });
+    </script>
+</body>
+
+</html>
