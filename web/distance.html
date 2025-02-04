@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temperature Converter</title>
+    <title>Distance Converter</title>
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
     <style>
         body {
@@ -34,24 +34,26 @@
 </head>
 
 <body>
-    <div class="converter" x-data="temperatureConverter">
-        <h2>Temperature Converter</h2>
+    <div class="converter" x-data="unitConverter">
+        <h2>Distance Converter</h2>
 
         <label for="inputValue">Value:</label>
         <input id="inputValue" type="number" x-model="inputValue" placeholder="Enter value" @input="validateInput">
 
         <label for="fromUnit">From:</label>
         <select id="fromUnit" x-model="fromUnit">
-            <option value="celsius">Celsius</option>
-            <option value="fahrenheit">Fahrenheit</option>
-            <option value="kelvin">Kelvin</option>
+            <option value="meters">Meters</option>
+            <option value="kilometers">Kilometers</option>
+            <option value="miles">Miles</option>
+            <option value="feet">Feet</option>
         </select>
 
         <label for="toUnit">To:</label>
         <select id="toUnit" x-model="toUnit">
-            <option value="celsius">Celsius</option>
-            <option value="fahrenheit">Fahrenheit</option>
-            <option value="kelvin">Kelvin</option>
+            <option value="meters">Meters</option>
+            <option value="kilometers">Kilometers</option>
+            <option value="miles">Miles</option>
+            <option value="feet">Feet</option>
         </select>
 
         <button @click="convert" :disabled="!toUnit || !inputValue">Convert</button>
@@ -62,14 +64,16 @@
 
     <script>
         document.addEventListener('alpine:init', () => {
-            Alpine.data('temperatureConverter', () => ({
+            Alpine.data('unitConverter', () => ({
                 inputValue: null,
-                fromUnit: 'celsius',
-                toUnit: 'fahrenheit',
+                fromUnit: 'meters',
+                toUnit: 'kilometers',
                 result: null,
 
                 validateInput() {
                     if (!this.inputValue) {
+                        this.fromUnit = 'meters';
+                        this.toUnit = 'kilometers';
                         this.result = null;
                     }
                 },
@@ -81,39 +85,15 @@
                         return;
                     }
 
-                    let convertedValue;
+                    const units = {
+                        meters: 1,
+                        kilometers: 0.001,
+                        miles: 0.000621371,
+                        feet: 3.28084,
+                    };
 
-                    if (this.fromUnit === this.toUnit) {
-                        convertedValue = value;
-                    } else {
-                        // Convert to Celsius first
-                        let celsiusValue;
-                        switch (this.fromUnit) {
-                            case 'celsius':
-                                celsiusValue = value;
-                                break;
-                            case 'fahrenheit':
-                                celsiusValue = (value - 32) * (5 / 9);
-                                break;
-                            case 'kelvin':
-                                celsiusValue = value - 273.15;
-                                break;
-                        }
-
-                        // Convert from Celsius to the target unit
-                        switch (this.toUnit) {
-                            case 'celsius':
-                                convertedValue = celsiusValue;
-                                break;
-                            case 'fahrenheit':
-                                convertedValue = (celsiusValue * (9 / 5)) + 32;
-                                break;
-                            case 'kelvin':
-                                convertedValue = celsiusValue + 273.15;
-                                break;
-                        }
-                    }
-
+                    const valueInMeters = value / units[this.fromUnit];
+                    const convertedValue = valueInMeters * units[this.toUnit];
                     this.result =
                         `${value} ${this.fromUnit} = ${convertedValue.toFixed(4)} ${this.toUnit}`;
                 },
